@@ -6,7 +6,7 @@
 /*   By: sdeeyien <sukitd@gmail.com>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/01 14:57:11 by sdeeyien          #+#    #+#             */
-/*   Updated: 2023/06/09 23:29:03 by sdeeyien         ###   ########.fr       */
+/*   Updated: 2023/08/02 23:32:48 by sdeeyien         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,8 +52,7 @@ typedef struct  s_philo
 /* init.c*/
 int	check_argv(int argc, char *argv[]);
 void	init_mutex(pthread_mutex_t *forks, char **argv);
-void	philo_copy(t_philo *ptr, char *argv[], pthread_mutex_t *mutex_forks,
-	char *forks);
+void	philo_copy(t_philo *ptr, char *argv[], char *forks, pthread_mutex_t *mutex_forks);
 void	philo_copy2(t_philo *ptr, char *argv[], int argc, int id);
 /* ft_atoi.c */
 int	ft_atoi(const char *str);
