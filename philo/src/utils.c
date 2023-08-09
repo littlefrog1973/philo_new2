@@ -6,7 +6,7 @@
 /*   By: sdeeyien <sukitd@gmail.com>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/09 13:13:32 by sdeeyien          #+#    #+#             */
-/*   Updated: 2023/06/09 14:05:48 by sdeeyien         ###   ########.fr       */
+/*   Updated: 2023/08/08 11:38:26 by sdeeyien         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,12 +17,12 @@ unsigned long	current_time(void)
 	struct timeval	time;
 
 	gettimeofday(&time, NULL);
-	return ((time.tv_sec * 1000) + (time.tv_usec / 1000));
+	return ((time.tv_sec * 1000L) + (time.tv_usec / 1000L));
 }
 
 int	is_die(t_philo *philo)
 {
-	if ((current_time() - philo->lm_time) >= (unsigned long) philo->philo_prop.t_die)
+	if (current_time() >= philo->lm_time + (unsigned long) philo->philo_prop.t_die)
 		return (1);
 	return (0);
 }
