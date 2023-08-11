@@ -6,7 +6,7 @@
 /*   By: sdeeyien <sukitd@gmail.com>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/02 08:36:41 by sdeeyien          #+#    #+#             */
-/*   Updated: 2023/08/02 23:25:47 by sdeeyien         ###   ########.fr       */
+/*   Updated: 2023/08/10 17:01:31 by sdeeyien         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,7 +43,8 @@ void	init_mutex(pthread_mutex_t *mutex_forks, char **argv)
 	}
 }
 
-void	philo_copy(t_philo *ptr, char *argv[], char *forks, pthread_mutex_t *mutex_forks)
+void	philo_copy(t_philo *ptr, char *argv[], volatile int *forks, pthread_mutex_t *mutex_forks)
+//void	philo_copy(t_philo *ptr, char *argv[], int *forks, pthread_mutex_t *mutex_forks)
 {
 	ptr->id = 0;
 	ptr->philo_prop.n_philo = ft_atoi(argv[1]);
@@ -52,6 +53,7 @@ void	philo_copy(t_philo *ptr, char *argv[], char *forks, pthread_mutex_t *mutex_
 	ptr->philo_prop.t_sleep = ft_atoi(argv[4]);
 	ptr->ptr_mutex_forks = mutex_forks;
 	ptr->forks = forks;
+	ptr->state = STATE_IDLE;
 }
 
 void	philo_copy2(t_philo *ptr, char *argv[], int argc, int id)

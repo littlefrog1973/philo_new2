@@ -6,12 +6,12 @@
 #    By: sdeeyien <sukitd@gmail.com>                +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2022/11/02 12:25:01 by sdeeyien          #+#    #+#              #
-#    Updated: 2023/06/09 13:14:36 by sdeeyien         ###   ########.fr        #
+#    Updated: 2023/08/10 17:04:06 by sdeeyien         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
 CC = gcc
-CFLAGS = -Wall -Werror -Wextra -pthread -g
+CFLAGS = -Wall -Werror -Wextra -pthread
 #CFLAGS = -g
 UNAME_S := $(shell uname -s)
 SRCDIR = ./src/

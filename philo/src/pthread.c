@@ -6,209 +6,233 @@
 /*   By: sdeeyien <sukitd@gmail.com>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/02 08:13:14 by sdeeyien          #+#    #+#             */
-/*   Updated: 2023/08/09 14:14:29 by sdeeyien         ###   ########.fr       */
+/*   Updated: 2023/08/10 16:31:18 by sdeeyien         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philo.h"
 
-
-void	prt_state(unsigned long c_time, int id, int *state)
+void init_time(t_philo *philo)
 {
-	if (*state == STATE_IDLE)
+	unsigned long	c_time;
+
+	c_time = current_time();
+	philo->s_time = c_time;
+	philo->lm_time = c_time;
+}
+
+int	taken_fork_odd(t_philo *philo)
+{
+	int	n_philo;
+
+	n_philo = philo->philo_prop.n_philo;
+	if ((philo->forks[philo->id - 1] == 0))
 	{
-		printf("%lu %d is thinking\n", c_time, id);
-		*state = STATE_THINKING;
+		pthread_mutex_lock(&(philo->ptr_mutex_forks[philo->id - 1]));
+		philo->forks[philo->id - 1] = philo->id;
+		print_log(philo, FORK_TAKEN);
+		if (philo->forks[philo->id % n_philo] == 0)
+		{
+			pthread_mutex_lock(&(philo->ptr_mutex_forks[philo->id % n_philo]));
+			philo->forks[philo->id % n_philo] = philo->id;
+			print_log(philo, FORK_TAKEN);
+			return (SUCCESS);
+		}
+/*		else
+		{
+			philo->forks[philo->id - 1] = 0;
+			pthread_mutex_unlock(&(philo->ptr_mutex_forks[philo->id - 1]));
+			return (0);
+		}
+*/
 	}
-	else if (*state == STATE_DEAD)
+	else if (is_die(philo))
+		return (0);
+	if ((philo->forks[philo->id - 1] == philo->id) && (philo->forks[philo->id % n_philo] == philo->id))
 	{
-		printf("%lu %d died\n", c_time, id);
+		return (FORK_TAKEN);
+	}
+	return (0);
+}
+
+int	taken_fork_even(t_philo *philo)
+{
+	int	n_philo;
+
+	n_philo = philo->philo_prop.n_philo;
+	if ((philo->forks[philo->id % n_philo] == 0))
+	{
+		pthread_mutex_lock(&(philo->ptr_mutex_forks[philo->id % n_philo]));
+		philo->forks[philo->id % n_philo] = philo->id;
+		print_log(philo, FORK_TAKEN);
+		if (philo->forks[philo->id - 1] == 0)
+		{
+			pthread_mutex_lock(&(philo->ptr_mutex_forks[philo->id - 1]));
+			philo->forks[philo->id - 1] = philo->id;
+			print_log(philo, FORK_TAKEN);
+			return (SUCCESS);
+		}
+/*		else
+		{
+			philo->forks[philo->id % n_philo] = 0;
+			pthread_mutex_unlock(&(philo->ptr_mutex_forks[philo->id % n_philo]));
+			return (0);
+		}
+*/
+	}
+	else if (is_die(philo))
+		return (0);
+	if ((philo->forks[philo->id - 1] == philo->id) && (philo->forks[philo->id % n_philo] == philo->id))
+	{
+		return (FORK_TAKEN);
+	}
+	return (0);
+}
+
+void release_fork(t_philo *philo, int status)
+{
+	int	n_philo;
+
+	n_philo = philo->philo_prop.n_philo;
+	if (status == STATE_DEAD)
+	{
+		philo->forks[philo->id - 1] = STATE_DEAD;
+		philo->forks[philo->id % n_philo] = 0;
+		pthread_mutex_unlock(&(philo->ptr_mutex_forks[philo->id - 1]));
+		pthread_mutex_unlock(&(philo->ptr_mutex_forks[philo->id]));
+	}
+	else
+	{
+		philo->forks[philo->id - 1] = 0;
+		philo->forks[philo->id % n_philo] = 0;
+		pthread_mutex_unlock(&(philo->ptr_mutex_forks[philo->id - 1]));
+		pthread_mutex_unlock(&(philo->ptr_mutex_forks[philo->id]));
 	}
 }
 
 void *philo_odd(void *args)
 {
-	int	n_eat;
-	int	id;
-	t_philo	*ptr_philo;
-	int	n_philo;
-	int	state;
-	unsigned long	s_time;
+	int				n_eat;
+	t_philo			*philo;
+//	int				pulse;
 
-	state = STATE_IDLE;
-	ptr_philo = (t_philo *) args;
-	s_time = ptr_philo->lm_time = current_time();
-//	ptr_philo->s_time = ptr_philo->lm_time = current_time();
-	id = ptr_philo->id;
-	n_eat = ptr_philo->philo_prop.n_eat;
-	n_philo = ptr_philo->philo_prop.n_philo;
+	philo = (t_philo *) args;
+	init_time(philo);
+	n_eat = philo->philo_prop.n_eat;
+//	pulse = 0;
 	while (n_eat)
 	{
-		if (is_die(ptr_philo))
+		if (is_die(philo))
 		{
-			state = STATE_DEAD;
-			prt_state(current_time() - s_time, id, &state);
+			print_log(philo, STATE_DEAD);
 			break;
 		}
-		prt_state(current_time() - s_time, id, &state);
-//		usleep(STEP);
-		if (ptr_philo->forks[id - 1] == 0 && !is_die(ptr_philo))
+		print_log(philo, STATE_THINKING);
+		while (!taken_fork_odd(philo) && !is_die(philo))
+			continue;
+		if (is_die(philo))
 		{
-			pthread_mutex_lock(&(ptr_philo->ptr_mutex_forks[id - 1]));
-			ptr_philo->forks[id - 1] = id;
-			printf("%lu %d has taken a forks\n", current_time() - s_time, id);
-			if (ptr_philo->forks[id % n_philo] == 0 && !is_die(ptr_philo))
-			{
-				pthread_mutex_lock(&(ptr_philo->ptr_mutex_forks[id % n_philo]));
-				ptr_philo->forks[id % n_philo] = id;
-				printf("%lu %d has taken a forks\n", current_time() - s_time, id);
-				ptr_philo->lm_time = current_time();
-				printf("%lu %d is eating\n", current_time() - s_time, id);
-				usleep(ptr_philo->philo_prop.t_eat * 1000);
-				n_eat--;
-				ptr_philo->forks[id % n_philo] = 0;
-				pthread_mutex_unlock(&(ptr_philo->ptr_mutex_forks[id % n_philo]));
-				ptr_philo->forks[id - 1] = 0;
-				pthread_mutex_unlock(&(ptr_philo->ptr_mutex_forks[id - 1]));
-				printf("%lu %d is sleeping\n", current_time() - s_time, id);
-				state = STATE_IDLE;
-				usleep(ptr_philo->philo_prop.t_sleep * 1000);
-			}
-			else
-				continue;
+			print_log(philo, STATE_DEAD);
+			break;
 		}
-		else if (ptr_philo->forks[id - 1] == id && !is_die(ptr_philo))
+//		print_log(philo, FORK_TAKEN);
+		philo->lm_time = current_time();
+		print_log(philo, STATE_EATING);
+		n_eat--;
+		usleep(philo->philo_prop.t_eat * 1000);
+/*		pulse = 0;
+		while (!is_die(philo) && ((pulse * STEP) < (philo->philo_prop.t_eat * 1000)))
 		{
-			if (ptr_philo->forks[id % n_philo] == 0 && !is_die(ptr_philo))
-			{
-				pthread_mutex_lock(&(ptr_philo->ptr_mutex_forks[id % n_philo]));
-				ptr_philo->forks[id % n_philo] = id;
-				printf("%lu %d has taken a forks\n", current_time() - s_time, id);
-				ptr_philo->lm_time = current_time();
-				printf("%lu %d is eating\n", current_time()- s_time, id);
-				usleep(ptr_philo->philo_prop.t_eat * 1000);
-				n_eat--;
-				ptr_philo->forks[id % n_philo] = 0;
-				pthread_mutex_unlock(&(ptr_philo->ptr_mutex_forks[id % n_philo]));
-				ptr_philo->forks[id - 1] = 0;
-				pthread_mutex_unlock(&(ptr_philo->ptr_mutex_forks[id - 1]));
-				printf("%lu %d is sleeping\n", current_time() - s_time, id);
-				state = STATE_IDLE;
-				usleep(ptr_philo->philo_prop.t_sleep * 1000);
-			}
-			else
-				continue;
+			usleep(STEP);
+			pulse++;
 		}
-		else if (is_die(ptr_philo))
+*/
+		if (is_die(philo))
 		{
-			if (ptr_philo->forks[id % n_philo] == id)
-			{
-				ptr_philo->forks[id % n_philo] = 0;
-				pthread_mutex_unlock(&(ptr_philo->ptr_mutex_forks[id % n_philo]));
-			}
+			print_log(philo, STATE_DEAD);
+			break;
+		}
+		release_fork(philo, STATE_SLEEPING);
+		print_log(philo, STATE_SLEEPING);
+		usleep(philo->philo_prop.t_sleep * 1000);
+/*		pulse = 0;
+		while (!is_die(philo) && ((pulse * STEP) < (philo->philo_prop.t_sleep * 1000)))
+		{
+			usleep(STEP);
+			pulse++;
+		}
+*/
+		if (is_die(philo))
+		{
+			print_log(philo, STATE_DEAD);
+			break;
 		}
 	}
-	if (ptr_philo->forks[id - 1] == id && is_die(ptr_philo))
-		pthread_mutex_unlock(&(ptr_philo->ptr_mutex_forks[id - 1]));
-	else if (ptr_philo->forks[id - 1] != id && ptr_philo->forks[id - 1] > 0)
-		{
-			while (ptr_philo->forks[id - 1] > 0)
-				continue;
-			ptr_philo->forks[id - 1] = id;
-		}
+	if (taken_fork_odd(philo) == FORK_TAKEN && is_die(philo))
+		release_fork(philo, STATE_DEAD);
 	return (NULL);
 }
 
 void *philo_even(void *args)
 {
-	int	n_eat;
-	int	id;
-	t_philo	*ptr_philo;
-	int		n_philo;
-	int	state;
-	unsigned long	s_time;
+	int				n_eat;
+	t_philo			*philo;
+//	int				pulse;
 
-	state = STATE_IDLE;
-	ptr_philo = (t_philo *) args;
-	s_time = ptr_philo->lm_time = current_time();
-//	ptr_philo->s_time = ptr_philo->lm_time = current_time();
-	id = ptr_philo->id;
-	n_eat = ptr_philo->philo_prop.n_eat;
-	n_philo = ptr_philo->philo_prop.n_philo;
+	philo = (t_philo *) args;
+	init_time(philo);
+	n_eat = philo->philo_prop.n_eat;
+//	pulse = 0;
 	while (n_eat)
 	{
-		if (is_die(ptr_philo))
+		if (is_die(philo))
 		{
-			state = STATE_DEAD;
-			prt_state(current_time() - s_time, id, &state);
+			print_log(philo, STATE_DEAD);
 			break;
 		}
-		prt_state(current_time() - s_time, id, &state);
-//		usleep(STEP);
-		if (ptr_philo->forks[id % n_philo] == 0 && !is_die(ptr_philo))
+		print_log(philo, STATE_THINKING);
+		while (!taken_fork_even(philo) && !is_die(philo))
+			continue;
+		if (is_die(philo))
 		{
-			pthread_mutex_lock(&(ptr_philo->ptr_mutex_forks[id % n_philo]));
-			ptr_philo->forks[id % n_philo] = id;
-			printf("%lu %d has taken a forks\n", current_time() - s_time, id);
-			if (ptr_philo->forks[id - 1] == 0 && !is_die(ptr_philo))
-			{
-				pthread_mutex_lock(&(ptr_philo->ptr_mutex_forks[id - 1]));
-				ptr_philo->forks[id - 1] = id;
-				printf("%lu %d has taken a forks\n", current_time() - s_time, id);
-				ptr_philo->lm_time = current_time();
-				printf("%lu %d is eating\n", current_time() - s_time, id);
-				usleep(ptr_philo->philo_prop.t_eat * 1000);
-				n_eat--;
-				ptr_philo->forks[id - 1] = 0;
-				pthread_mutex_unlock(&(ptr_philo->ptr_mutex_forks[id - 1]));
-				ptr_philo->forks[id % n_philo] = 0;
-				pthread_mutex_unlock(&(ptr_philo->ptr_mutex_forks[id % n_philo]));
-				printf("%lu %d is sleeping\n", current_time() - s_time, id);
-				state = STATE_IDLE;
-				usleep(ptr_philo->philo_prop.t_sleep * 1000);
-			}
-			else
-				continue;
+			print_log(philo, STATE_DEAD);
+			break;
 		}
-		else if(ptr_philo->forks[id % n_philo] == id && !is_die(ptr_philo))
+//		print_log(philo, FORK_TAKEN);
+		philo->lm_time = current_time();
+		print_log(philo, STATE_EATING);
+		n_eat--;
+		usleep(philo->philo_prop.t_eat * 1000);
+/*		pulse = 0;
+		while (!is_die(philo) && (pulse * STEP < (philo->philo_prop.t_eat * 1000)))
 		{
-			if (ptr_philo->forks[id - 1] == 0 && !is_die(ptr_philo))
-			{
-				pthread_mutex_lock(&(ptr_philo->ptr_mutex_forks[id - 1]));
-				ptr_philo->forks[id - 1] = id;
-				printf("%lu %d has taken a forks\n", current_time() - s_time, id);
-				ptr_philo->lm_time = current_time();
-				printf("%lu %d is eating\n", current_time() - s_time, id);
-//				state = STATE_IDLE;
-				usleep(ptr_philo->philo_prop.t_eat * 1000);
-				n_eat--;
-				ptr_philo->forks[id - 1] = 0;
-				pthread_mutex_unlock(&(ptr_philo->ptr_mutex_forks[id - 1]));
-				ptr_philo->forks[id % n_philo] = 0;
-				pthread_mutex_unlock(&(ptr_philo->ptr_mutex_forks[id % n_philo]));
-				printf("%lu %d is sleeping\n", current_time() - s_time, id);
-				state = STATE_IDLE;
-				usleep(ptr_philo->philo_prop.t_sleep * 1000);
-			}
-			else
-				continue;
+			usleep(STEP);
+			pulse++;
 		}
-		else if (is_die(ptr_philo))
+*/
+		if (is_die(philo))
 		{
-			if (ptr_philo->forks[id % n_philo] == id)
-			{
-				ptr_philo->forks[id % n_philo] = 0;
-				pthread_mutex_unlock(&(ptr_philo->ptr_mutex_forks[id % n_philo]));
-			}
+			print_log(philo, STATE_DEAD);
+			break;
+		}
+		release_fork(philo, STATE_SLEEPING);
+		print_log(philo, STATE_SLEEPING);
+		usleep(philo->philo_prop.t_sleep * 1000);
+/*		pulse = 0;
+		while (!is_die(philo) && (pulse * STEP < (philo->philo_prop.t_sleep * 1000)))
+		{
+			usleep(STEP);
+			pulse++;
+		}
+*/
+		if (is_die(philo))
+		{
+			print_log(philo, STATE_DEAD);
+			break;
 		}
 	}
-	if (ptr_philo->forks[id - 1] == id && is_die(ptr_philo))
-		pthread_mutex_unlock(&(ptr_philo->ptr_mutex_forks[id - 1]));
-	else if (ptr_philo->forks[id - 1] != id && ptr_philo->forks[id - 1] > 0)
-		{
-			while (ptr_philo->forks[id - 1] > 0)
-				continue;
-			ptr_philo->forks[id - 1] = id;
-		}
+	if (taken_fork_even(philo) == FORK_TAKEN && is_die(philo))
+		release_fork(philo, STATE_DEAD);
 	return (NULL);
 }
+
