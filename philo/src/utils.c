@@ -6,7 +6,7 @@
 /*   By: sdeeyien <sukitd@gmail.com>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/09 13:13:32 by sdeeyien          #+#    #+#             */
-/*   Updated: 2023/08/10 16:09:39 by sdeeyien         ###   ########.fr       */
+/*   Updated: 2023/08/15 15:34:36 by sdeeyien         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,9 +22,19 @@ unsigned long	current_time(void)
 
 int	is_die(t_philo *philo)
 {
-	if (current_time() >= philo->lm_time + (unsigned long) philo->philo_prop.t_die)
+	if ((current_time() >= philo->lm_time + (unsigned long) philo->prop.t_die)
+		|| philo->forks[MAX_PHILO] == STATE_DEAD)
 		return (1);
 	return (0);
+}
+
+void	init_time(t_philo *philo)
+{
+	unsigned long	c_time;
+
+	c_time = current_time();
+	philo->s_time = c_time;
+	philo->lm_time = c_time;
 }
 
 void	print_log(t_philo *philo, int state)
@@ -33,7 +43,8 @@ void	print_log(t_philo *philo, int state)
 	unsigned long		millisec;
 
 	gettimeofday(&time, NULL);
-	millisec = (time.tv_sec * 1000L) + (time.tv_usec / 1000L) - (unsigned long) philo->s_time;
+	millisec = (time.tv_sec * 1000L) + (time.tv_usec / 1000L)
+		- (unsigned long) philo->s_time;
 	if (state == FORK_TAKEN)
 	{
 		printf("%5lu %3d has taken a fork\n", millisec, philo->id);
