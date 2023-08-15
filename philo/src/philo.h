@@ -6,7 +6,7 @@
 /*   By: sdeeyien <sukitd@gmail.com>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/01 14:57:11 by sdeeyien          #+#    #+#             */
-/*   Updated: 2023/08/15 14:51:17 by sdeeyien         ###   ########.fr       */
+/*   Updated: 2023/08/15 23:17:02 by sdeeyien         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,7 +42,7 @@ typedef struct s_philo
 }	t_philo;
 
 # define MAX_PHILO		200
-# define STATE_IDLE		0
+# define IDLE		0
 # define STATE_THINKING	1
 # define STATE_EATING	2
 # define STATE_SLEEPING	4

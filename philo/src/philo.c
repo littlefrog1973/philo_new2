@@ -6,7 +6,7 @@
 /*   By: sdeeyien <sukitd@gmail.com>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/02 08:13:35 by sdeeyien          #+#    #+#             */
-/*   Updated: 2023/08/15 16:02:22 by sdeeyien         ###   ########.fr       */
+/*   Updated: 2023/08/15 23:35:53 by sdeeyien         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,10 +24,9 @@ int	main(int argc, char *argv[])
 	pthread_t					philo[MAX_PHILO];
 	pthread_mutex_t				mutex_forks[MAX_PHILO + 1];
 	unsigned char				forks[MAX_PHILO + 1];
-//	static unsigned char		forks[MAX_PHILO + 1] = {0};
 	t_philo						phi_t[MAX_PHILO];
 
-	memset(forks, STATE_IDLE, MAX_PHILO + 1);
+	memset(forks, IDLE, MAX_PHILO + 1);
 	if (check_argv(argc, argv))
 	{
 		init_mutex(mutex_forks, argv);
