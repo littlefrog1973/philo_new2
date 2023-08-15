@@ -6,7 +6,7 @@
 /*   By: sdeeyien <sukitd@gmail.com>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/01 14:57:11 by sdeeyien          #+#    #+#             */
-/*   Updated: 2023/08/15 23:17:02 by sdeeyien         ###   ########.fr       */
+/*   Updated: 2023/08/16 00:10:06 by sdeeyien         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,7 +42,7 @@ typedef struct s_philo
 }	t_philo;
 
 # define MAX_PHILO		200
-# define IDLE		0
+# define IDLE			0
 # define STATE_THINKING	1
 # define STATE_EATING	2
 # define STATE_SLEEPING	4
@@ -56,12 +56,12 @@ void			init_mutex(pthread_mutex_t *forks, char **argv);
 void			philo_copy(t_philo *ptr, char *argv[], unsigned char *forks,
 					pthread_mutex_t *mutex_forks);
 void			philo_copy2(t_philo *ptr, char *argv[], int argc, int id);
+
 /* ft_atoi.c */
 int				ft_atoi(const char *str);
 
 /* pthread.c*/
 void			*philo_odd(void *args);
-void			*philo_even(void *args);
 
 /* utils.c*/
 unsigned long	current_time(void);

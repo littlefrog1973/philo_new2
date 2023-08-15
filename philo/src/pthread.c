@@ -6,7 +6,7 @@
 /*   By: sdeeyien <sukitd@gmail.com>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/02 08:13:14 by sdeeyien          #+#    #+#             */
-/*   Updated: 2023/08/15 23:32:27 by sdeeyien         ###   ########.fr       */
+/*   Updated: 2023/08/16 00:12:45 by sdeeyien         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,7 +43,8 @@ static int	eat_sleep(t_philo *philo, int *n_eat)
 
 static void	do_after_dead(t_philo *philo)
 {
-	print_log(philo, STATE_DEAD);
+	if (current_time() >= philo->lm_time + (unsigned long) philo->prop.t_die)
+		print_log(philo, STATE_DEAD);
 	if (philo->forks[philo->id - 1] == philo->id)
 	{
 		philo->forks[philo->id - 1] = STATE_DEAD;
