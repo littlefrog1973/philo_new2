@@ -6,7 +6,7 @@
 /*   By: sdeeyien <sukitd@gmail.com>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/02 08:13:14 by sdeeyien          #+#    #+#             */
-/*   Updated: 2023/08/16 00:12:45 by sdeeyien         ###   ########.fr       */
+/*   Updated: 2023/08/16 08:46:28 by sdeeyien         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -56,7 +56,9 @@ static void	do_after_dead(t_philo *philo)
 		pthread_mutex_unlock(&(philo->mtx_forks[philo->id
 				% philo->prop.n_phi]));
 	}
+	pthread_mutex_lock(&(philo->mtx_forks[MAX_PHILO]));
 	philo->forks[MAX_PHILO] = STATE_DEAD;
+	pthread_mutex_unlock(&(philo->mtx_forks[MAX_PHILO]));
 }
 
 static void	take_left_fork(t_philo *philo)
